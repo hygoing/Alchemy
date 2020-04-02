@@ -15,8 +15,8 @@
 
     def minIncrementForUnique(self, A: List[int]) -> int:
         A.sort()
-        res = 0
-        for i in range(1,len(A)):
+        res =
+        for i in range(1,len(A)):0
             if A[i] <= A[i-1]:
                 temp = A[i]
                 A[i] = A[i-1] + 1

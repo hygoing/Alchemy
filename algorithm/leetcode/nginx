@@ -1,0 +1,257 @@
+user root;
+master_process on;
+worker_processes 1;
+worker_cpu_affinity auto;
+worker_rlimit_nofile 1024000;
+worker_rlimit_core 2048M;
+working_directory /var/log/lb/d-u49grf1y9a/;
+error_log /var/log/lb/d-u49grf1y9a/error.log error;
+
+
+
+
+include preconf.d/*.conf;
+
+events {
+    use epoll;
+    worker_connections 1024000;
+    multi_accept on;
+}
+
+http {
+
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+   log_format http_format '|q|$msec|q|d-u49grf1y9a|q|5722620c1c9743a7946ea23cdba351a3|q|alb-fdjwwn50fv|q|'
+        '$remote_addr|q|$remote_port|q|$server_addr|q|$server_port|q|$upstream_local|q|$upstream_addr|q|'
+        '$request_time|q|$upstream_connect_time|q|$upstream_response_time|q|'
+        '$status|q|$upstream_status|q|$request_length|q|$bytes_sent|q|'
+        '$scheme|q|$request_method|q|$host|q|$request_uri|q|$server_protocol|q|'
+        '$http_user_agent|q|$ssl_cipher|q|$ssl_protocol|q|$ssl_name';
+   log_format local_http_format '$time_iso8601 alb-fdjwwn50fv '
+        '$time_iso8601 d-u49grf1y9a 5722620c1c9743a7946ea23cdba351a3 alb-fdjwwn50fv '
+        '$remote_addr $remote_port $server_addr $server_port $upstream_local $upstream_addr '
+        '$request_time $upstream_connect_time $upstream_response_time '
+        '$status $upstream_status $request_length $bytes_sent '
+        '$scheme $request_method $host $request_uri $server_protocol '
+        '$http_user_agent $ssl_cipher $ssl_protocol $ssl_name';
+    access_log syslog:server=unix:/var/run/lb/nginx_syslog.sock,facility=local5,severity=alert http_format;
+    access_log /var/log/lb/d-u49grf1y9a/http-access.log local_http_format;
+    error_log syslog:server=unix:/var/run/lb/nginx_syslog_check.sock,facility=local5,severity=alert error health_check;
+    error_log /var/log/lb/d-u49grf1y9a/http_health_check.log error health_check;
+
+    sendfile       on;
+    aio            on;
+    directio       8m;
+    directio_alignment 4K;
+
+    #proxy_bind $remote_addr:$remote_port transparent;
+    proxy_request_buffering off;
+    client_max_body_size 0;
+    keepalive_requests 1024;
+    keepalive_timeout  60;
+
+    proxy_buffering off;
+    proxy_pass_header Server;
+    proxy_connect_timeout 10s;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+
+    proxy_http_version 1.1;
+    map_hash_bucket_size 128;
+    map $http_upgrade $connection_upgrade {
+        default $http_connection;
+        '' "";
+    }
+    proxy_next_upstream_tries 1;
+
+    server_tokens off;
+
+    server {
+        listen 127.0.0.1:80 reuseport fastopen=1024 deferred;
+
+        location /status {
+            status;
+        }
+
+        location /http_check {
+            check_status;
+        }
+
+        location /stream_check {
+            stream_check_status;
+        }
+    }
+
+    # lb http service start for Id alb-fdjwwn50fv version 3 VIP 10.0.1.5
+    upstream backend-2f95fg3y3l {
+       #upstream version 0
+        #upstream protocol HTTP
+
+        #instance group Id tg-6e1oczegzz
+        #instance group version 0
+        sticky expires=99;
+        server 10.0.2.24:10000 weight=10 max_fails=0 fail_timeout=10s;
+        server 10.0.2.6:10000 weight=10 max_fails=0 fail_timeout=10s;
+        keepalive 64;
+        check interval=5000 timeout=3000 fall=3 rise=3 type=http port=10000;
+        check_http_send "GET / HTTP/1.0\r\nhost: lll.com\r\n\r\n";
+        check_http_expect_alive http_2xx http_3xx;
+
+
+        check_tenant_id 5722620c1c9743a7946ea23cdba351a3;
+        check_alb_id alb-fdjwwn50fv;
+        check_docker_id d-u49grf1y9a;
+     }
+
+    upstream backend-zzreul1fvv {
+       #upstream version 0
+        #upstream protocol HTTP
+
+        #instance group Id tg-6e1oczegzz
+        #instance group version 0
+        sticky expires=10;
+        server 10.0.2.24:9000 weight=10 max_fails=0 fail_timeout=10s;
+        server 10.0.2.6:9000 weight=10 max_fails=0 fail_timeout=10s;
+        keepalive 64;
+        check interval=5000 timeout=3000 fall=3 rise=3 type=http port=9000;
+        check_http_send "GET / HTTP/1.0\r\nhost: test.domain\r\n\r\n";
+        check_http_expect_alive http_2xx http_3xx;
+
+
+        check_tenant_id 5722620c1c9743a7946ea23cdba351a3;
+        check_alb_id alb-fdjwwn50fv;
+        check_docker_id d-u49grf1y9a;
+     }
+
+
+    # lb listen service start for Id listen_f9958jmn5x version 0
+
+
+    server {
+        listen 10.0.1.5:443 ssl reuseport fastopen=1024;
+
+        server_name 10.0.1.5 "";
+
+
+        ssl_name cert-90a3s41amx;
+        ssl_certificate /etc/nginx/certs/server_cert-90a3s41amx.crt;
+        ssl_certificate_key /etc/nginx/certs/server_cert-90a3s41amx.key;
+
+
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA256:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA;
+        ssl_prefer_server_ciphers on;
+        ssl_session_cache shared:zone_listen_f9958jmn5x:100m;
+        ssl_session_timeout 1h;
+
+
+        keepalive_timeout 60;
+        underscores_in_headers on;
+        proxy_read_timeout 60;
+        proxy_send_timeout 60;
+        location / {
+            proxy_pass http://backend-2f95fg3y3l;
+            proxy_set_header Host $http_host;
+            proxy_set_header Connection $connection_upgrade;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $host:$server_port;
+            proxy_set_header X-Forwarded-Port $server_port;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-LBIP $server_addr;
+
+        }
+    }
+    # lb listen service end for Id listen_f9958jmn5x version 0
+
+    # lb listen service start for Id listen_xc655tqxki version 0
+
+
+    server {
+        listen 10.0.1.5:9000 reuseport fastopen=1024 deferred;
+
+        server_name 10.0.1.5 "";
+
+        keepalive_timeout 60;
+        underscores_in_headers on;
+        proxy_read_timeout 60;
+        proxy_send_timeout 60;
+        location / {
+            proxy_pass http://backend-zzreul1fvv;
+            proxy_set_header Host $http_host;
+            proxy_set_header Connection $connection_upgrade;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $host:$server_port;
+            proxy_set_header X-Forwarded-Port $server_port;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-LBIP $server_addr;
+
+        }
+    }
+    # lb listen service end for Id listen_xc655tqxki version 0
+
+
+    # lb http service end for Id alb-fdjwwn50fv version 3 VIP 10.0.1.5
+
+    include waf.d/*.conf;
+
+}
+
+stream {
+    log_format stream_format '|q|$msec|q|d-u49grf1y9a|q|5722620c1c9743a7946ea23cdba351a3|q|alb-fdjwwn50fv|q|'
+        '$remote_addr|q|$remote_port|q|$server_addr|q|$server_port|q|$upstream_local|q|$upstream_addr|q|'
+        '$session_time|q|$upstream_connect_time|q|$upstream_session_time|q|'
+        '$status|q|-|q|$bytes_received|q|$bytes_sent|q|$protocol|q|-|q|-|q|-|q|-|q|-|q|$ssl_cipher|q|$ssl_protocol|q|$ssl_name';
+    log_format local_stream_format ' $time_iso8601 d-u49grf1y9a 5722620c1c9743a7946ea23cdba351a3 alb-fdjwwn50fv '
+            '$remote_addr $remote_port $server_addr $server_port $upstream_local $upstream_addr '
+            '$session_time $upstream_connect_time $upstream_session_time '
+            '$status - $bytes_received $bytes_sent $protocol - - - - - $ssl_cipher $ssl_protocol $ssl_name';
+	access_log syslog:server=unix:/var/run/lb/nginx_syslog.sock,facility=local5,severity=alert stream_format;
+	access_log /var/log/lb/d-u49grf1y9a/stream-access.log local_stream_format;
+    error_log syslog:server=unix:/var/run/lb/nginx_syslog_check.sock,facility=local5,severity=alert error health_check;
+    error_log /var/log/lb/d-u49grf1y9a/stream_health_check.log error health_check;
+
+    tcp_nodelay on;
+    #proxy_bind $remote_addr:$remote_port transparent;
+    proxy_connect_timeout 5s;
+    proxy_timeout 60s;
+    proxy_next_upstream_tries 1;
+    map_hash_bucket_size 128;
+
+    # lb stream service start for Id alb-fdjwwn50fv version 3 VIP 10.0.1.5
+    upstream backend-qouylnpk3e {
+        #upstream version 0
+        #upstream protocol TCP
+
+        #instance group Id tg-6e1oczegzz
+        #instance group version 0
+        server 10.0.2.24:8000 weight=10 max_fails=0 fail_timeout=10s;
+        server 10.0.2.6:8000 weight=10 max_fails=0 fail_timeout=10s;
+        check interval=5000 timeout=3000 fall=3 rise=3 type=tcp port=8000;
+
+
+        check_tenant_id 5722620c1c9743a7946ea23cdba351a3;
+        check_alb_id alb-fdjwwn50fv;
+        check_docker_id d-u49grf1y9a;
+    }
+
+
+    # lb listen service start for Id listen_uwfw8bw48i version 0
+
+    server {
+        listen 10.0.1.5:80 reuseport;
+
+
+
+        proxy_timeout 1800s;
+        proxy_pass backend-qouylnpk3e;
+
+    }
+    # lb listen service end for Id listen_uwfw8bw48i version 0
+
+    # lb stream service end for Id alb-fdjwwn50fv version 3 VIP 10.0.1.5
+
+}
