@@ -19,3 +19,5 @@ class Solution:
         for i in range(0, len(tmp_ans)):
             ans = ans + tmp_ans[i]
         return ans
+
+        str.join()

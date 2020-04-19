@@ -44,12 +44,12 @@ class Solution:
         else:
             return root
 
-    def hy_dfs(self, root: TreeNode, p: TreeNode, q: TreeNode) -> TreeNode:
+    def dfs(self, root: TreeNode, p: TreeNode, q: TreeNode) -> TreeNode:
         if root is None or root.val == p.val or root.val == q.val:
             return root
 
-        l = self.hy_dfs(root.left, p, q)
-        r = self.hy_dfs(root.right, p, q)
+        l = self.dfs(root.left, p, q)
+        r = self.dfs(root.right, p, q)
 
         if l is None:
             return r

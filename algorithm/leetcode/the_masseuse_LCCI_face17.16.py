@@ -56,3 +56,9 @@ if __name__ == "__main__":
     solution = Solution()
     nums = [2, 7, 9, 3, 1]
     print(solution.massage(nums))
+
+    j = 2
+    s = "...."
+    s1 = s[:j] + "Q" + s[j+1:]
+    print(s[j:])
+    print(s1)
