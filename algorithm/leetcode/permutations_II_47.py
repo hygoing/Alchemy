@@ -30,3 +30,6 @@ if __name__ == "__main__":
     nums = [1, 1, 2]
     nums.sort()
     print(solution.permuteUnique(nums))
+
+    a = [87,81,72,62,82,]
+    b = [5,4,1.5,4,1]
